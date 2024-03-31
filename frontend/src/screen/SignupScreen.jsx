@@ -1,52 +1,51 @@
+import React, { useContext, useEffect, useState } from 'react';
 import Container from 'react-bootstrap/Container';
-import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { Helmet } from 'react-helmet-async';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { useContext, useEffect, useState } from 'react';
+import Form from 'react-bootstrap/Form';
 import { Store } from '../Store';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import { getError } from '../utils';
 
-export default function SigninScreen() {
+export default function SignupScreen() {
   const navigate = useNavigate();
   const { search } = useLocation();
-  //   console.log('Search:', search);
-
   const redirectInUrl = new URLSearchParams(search).get('redirect');
-  console.log('Redirect In URL:', redirectInUrl);
-
+  // ternary operator
   const redirect = redirectInUrl ? redirectInUrl : '/';
-  //   console.log('Redirect', redirect);
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const { state, dispatch: ctxDispatch } = useContext(Store);
   const { userInfo } = state;
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error('Password do not match');
+      return;
+    }
     try {
-      const { data } = await axios.post('/api/users/signin', {
+      const { data } = await axios.post('/api/users/signup', {
+        name,
         email,
         password,
       });
-      console.log(
-        'Retrieved response from {data}',
-        JSON.stringify(data, null, 2)
-      );
+      console.log(data);
       ctxDispatch({ type: 'USER_SIGNIN', payload: data });
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate(redirect || '/');
-      console.log(data);
     } catch (err) {
       toast.error(getError(err));
     }
   };
 
-  // prevent user from access sign in page again
+  // prevent user from access sign up page again
   // exp: if userInfo exist, navigate to home screen
   useEffect(() => {
     if (userInfo) {
@@ -57,11 +56,20 @@ export default function SigninScreen() {
   return (
     <Container className="small-container">
       <Helmet>
-        <title>Sign In</title>
+        <title>Sign Up</title>
       </Helmet>
-      <h1 className="my-3">Sign In</h1>
+      <h1 className="my-3">Sign Up</h1>
 
       <Form onSubmit={submitHandler}>
+        <Form.Group className="mb-3" controlId="name">
+          <Form.Label>Name</Form.Label>
+          <Form.Control
+            type="name"
+            required
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Form.Group>
+
         <Form.Group className="mb-3" controlId="email">
           <Form.Label>Email</Form.Label>
           <Form.Control
@@ -79,14 +87,22 @@ export default function SigninScreen() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Group>
+        <Form.Group className="mb-3" controlId="confirmPassword">
+          <Form.Label>Confirm Password</Form.Label>
+          <Form.Control
+            type="password"
+            required
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </Form.Group>
 
         <div className="mb-5">
-          <Button type="submit">Sign In</Button>
+          <Button type="submit">Sign Up</Button>
         </div>
 
         <div className="mb-3    ">
-          New customer?{' '}
-          <Link to={`/signup?redirect=${redirect}`}>Create your account</Link>
+          Already have an account?{' '}
+          <Link to={`/signin?redirect=${redirect}`}>Sign-In</Link>
         </div>
       </Form>
     </Container>

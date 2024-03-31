@@ -2,7 +2,6 @@ import express from 'express';
 import Product from '../models/productModel.js';
 
 const productRouter = express.Router();
-export default productRouter;
 
 productRouter.get('/', async (req, res) => {
   const products = await Product.find();
@@ -26,3 +25,5 @@ productRouter.get('/:id', async (req, res) => {
     res.status(404).send({ message: 'Product Not Found' });
   }
 });
+
+export default productRouter;
